@@ -36,6 +36,7 @@ var Isis = (function(my, global) {
 				}
 			}
 		}
+		Marvin.drawFloor(zone.length, zone[0].length);
 	}
 
 	my.getCollisionMap = function() {

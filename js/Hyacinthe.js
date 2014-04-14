@@ -4,20 +4,24 @@ var Hyacinthe = (function(my, Marvin, global) {
 		if (my.isMoving || !canGo(direction)) return;
 		my.isMoving = true;
 		var c = my.compass[0];
-		Marvin.startCameraMovement((c == "N" || c == "S") ? 'x' : 'z', (c == "N" || c == "E") ? -1*direction : 1*direction, (function(_this) {
-			return function() {
-				my.playerPosition.y += (c == "N" ? -1*direction : c == "S" ? 1*direction : 0);
-				my.playerPosition.x += (c == "E" ? -1*direction : c == "W" ? 1*direction : 0);
-				_this.isMoving = false;
-			};
-		}(my)) );
+		Marvin.startCameraMovement(
+			(c == "N" || c == "S") ? 'x' : 'z',
+			(c == "N" || c == "E") ? -1*direction : 1*direction,
+			(function(_this) {
+				return function() {
+					my.playerPosition.y += (c == "N" ? -1*direction : c == "S" ? 1*direction : 0);
+					my.playerPosition.x += (c == "E" ? -1*direction : c == "W" ? 1*direction : 0);
+					_this.isMoving = false;
+				};
+			}(my))
+		);
 	}
 
 	var turn = function (direction) {
 		if (my.isMoving) return;
 		my.isMoving = true;
 		Marvin.startCameraRotation(1*direction, (function(_this, d) {
-			return function() { 
+			return function() {
 				_this.isMoving = false;
 				d == 1 ? _this.compass.unshift(_this.compass.pop()) : _this.compass.push(_this.compass.shift());
 				console.log(_this.compass[0]);
@@ -35,13 +39,13 @@ var Hyacinthe = (function(my, Marvin, global) {
 	}
 
 	my.compass = ["E", "S", "W", "N"];
-	
+
 	my.isMoving = false;
 
 	my.collisionMap = [];
 
 	my.playerPosition = {
-		x: 0, 
+		x: 0,
 		y: 0
 	};
 

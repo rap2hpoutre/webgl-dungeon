@@ -2,9 +2,9 @@
  * Marvin - TODO: clean
  */
 var Marvin = (function(my, global) {
-	var camera_target_rotation_y = null, 
-		camera_target_position = null, 
-		camera_direction, 
+	var camera_target_rotation_y = null,
+		camera_target_position = null,
+		camera_direction,
 		camera_axis,
 		camera_rotation_callback,
 		camera_position_callback;
@@ -71,6 +71,27 @@ var Marvin = (function(my, global) {
 		scene.add(c);
 		c.position.z = scale*y;
 		c.position.x = scale*x;
+	}
+	/**
+	 * drawFloor()
+	 */
+	my.drawFloor = function(wx, wy) {
+		var geometry_plane = new THREE.PlaneGeometry( wx*scale, wy*scale );
+		var material_plane = new THREE.MeshBasicMaterial( {color: 0x444444 } );
+		var floor = new THREE.Mesh( geometry_plane, material_plane );
+		floor.rotation.x = Math.PI + Math.PI/2;
+		floor.position.y = -1;
+		floor.position.z = scale*(wy/2);
+		floor.position.x = scale*(wx/2);
+
+		var ceil = new THREE.Mesh( geometry_plane, cube_material );
+		ceil.rotation.x = Math.PI/2;
+		ceil.position.y = 1;
+		ceil.position.z = scale*(wy/2);
+		ceil.position.x = scale*(wx/2);
+
+		scene.add( floor );
+		scene.add( ceil );
 	}
 	/**
 	 * setCameraPosition()
