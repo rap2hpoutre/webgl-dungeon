@@ -21,4 +21,8 @@
 		}
 	});
 
+	document.addEventListener( 'mousedown', function(event) {
+		console.log("Click.");
+	}, false );
+
 }(Marvin, Hyacinthe, Isis, this));

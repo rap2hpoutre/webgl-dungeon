@@ -10,7 +10,8 @@ var Marvin = (function(my, global) {
 		camera_position_callback;
 
 	var scene = new THREE.Scene();
-	scene.fog = new THREE.FogExp2( new THREE.Color( 0 ), 0.2 );
+	scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1,10 );
+
 	var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
 	var renderer = new THREE.WebGLRenderer();
@@ -18,15 +19,12 @@ var Marvin = (function(my, global) {
 	document.body.appendChild(renderer.domElement);
 
 	var map = THREE.ImageUtils.loadTexture( "images/1.png" );
-	map.wrapS = THREE.RepeatWrapping;
-	map.wrapT = THREE.RepeatWrapping;
 	map.magFilter = THREE.NearestFilter;
-	map.repeat.set( 1, 1 );
 
-	var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
-	var sprite = new THREE.Sprite( material );
-	sprite.position.x = 2;
-	scene.add( sprite );
+	var sprite_texture = THREE.ImageUtils.loadTexture( "images/gold.png" );
+	sprite_texture.magFilter = THREE.NearestFilter;
+
+	var sprite_material = new THREE.SpriteMaterial( { map: sprite_texture, color: 0xffffff, fog: true } );
 
 	var scale = 2;
 	var cube_geometry = new THREE.CubeGeometry(scale,scale,scale);
@@ -72,6 +70,18 @@ var Marvin = (function(my, global) {
 		c.position.z = scale*y;
 		c.position.x = scale*x;
 	}
+
+	/**
+	 * drawCube()
+	 */
+	my.drawSprite = function(x, y) {
+		var sprite = new THREE.Sprite( sprite_material );
+		sprite.position.z = scale*y;
+		sprite.position.x = scale*x;
+		sprite.position.y = -0.5;
+		scene.add( sprite );
+	}
+
 	/**
 	 * drawFloor()
 	 */

@@ -11,7 +11,7 @@ var Isis = (function(my, global) {
 		[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
 		[1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
 		[1,1,1,1,1,0,0,1,1,1,1,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1],
+		[1,3,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1,1,1,1],
 		[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
 		[1,0,0,0,0,2,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
 		[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1],
@@ -30,9 +30,12 @@ var Isis = (function(my, global) {
 	my.buildTestLevel = function(Marvin) {
 		for(var i = 0; i < zone.length; i++) {
 			for(var j = 0; j < zone[i].length; j++) {
-				if (zone[i][j] == 1) Marvin.drawCube(i,j);
-				if (zone[i][j] == 2) {
+				if (zone[i][j] == 1) {
+					Marvin.drawCube(i,j);
+				} else if (zone[i][j] == 2) {
 					Marvin.setCameraPosition(i,j);
+				} else if (zone[i][j] == 3) {
+					Marvin.drawSprite(i,j);
 				}
 			}
 		}

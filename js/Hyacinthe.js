@@ -6,11 +6,11 @@ var Hyacinthe = (function(my, Marvin, global) {
 		var c = my.compass[0];
 		Marvin.startCameraMovement(
 			(c == "N" || c == "S") ? 'x' : 'z',
-			(c == "N" || c == "E") ? -1*direction : 1*direction,
+			(c == "N" || c == "E") ? -1*direction : direction,
 			(function(_this) {
 				return function() {
-					my.playerPosition.y += (c == "N" ? -1*direction : c == "S" ? 1*direction : 0);
-					my.playerPosition.x += (c == "E" ? -1*direction : c == "W" ? 1*direction : 0);
+					my.playerPosition.y += (c == "N" ? -1*direction : c == "S" ? direction : 0);
+					my.playerPosition.x += (c == "E" ? -1*direction : c == "W" ? direction : 0);
 					_this.isMoving = false;
 				};
 			}(my))
@@ -31,10 +31,10 @@ var Hyacinthe = (function(my, Marvin, global) {
 
 	var canGo = function (direction) {
 		var c = my.compass[0];
-		var ret = ((c == "N" && my.collisionMap[my.playerPosition.y-1][my.playerPosition.x] == 0 ||
-			c == "S" && my.collisionMap[my.playerPosition.y+1][my.playerPosition.x] == 0 ||
-			c == "W" && my.collisionMap[my.playerPosition.y][my.playerPosition.x+1] == 0 ||
-			c == "E" && my.collisionMap[my.playerPosition.y][my.playerPosition.x-1] == 0));
+		var ret = ((c == "N" && my.collisionMap[my.playerPosition.y-direction][my.playerPosition.x] == 0 ||
+			c == "S" && my.collisionMap[my.playerPosition.y+direction][my.playerPosition.x] == 0 ||
+			c == "W" && my.collisionMap[my.playerPosition.y][my.playerPosition.x+direction] == 0 ||
+			c == "E" && my.collisionMap[my.playerPosition.y][my.playerPosition.x-direction] == 0));
 		return ret;
 	}
 
