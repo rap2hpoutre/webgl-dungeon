@@ -94,7 +94,7 @@ var Marvin = (function(my, global) {
 		floor.position.z = scale*(wy/2);
 		floor.position.x = scale*(wx/2);
 
-		var ceil = new THREE.Mesh( geometry_plane, cube_material );
+		var ceil = new THREE.Mesh( geometry_plane, material_plane );
 		ceil.rotation.x = Math.PI/2;
 		ceil.position.y = 1;
 		ceil.position.z = scale*(wy/2);
