@@ -2,7 +2,8 @@
  * Marvin - TODO: clean
  */
 var Marvin = (function(my, global) {
-	var camera_target_rotation_y = null,
+	var objects = [],
+		camera_target_rotation_y = null,
 		camera_target_position = null,
 		camera_direction,
 		camera_axis,
@@ -11,8 +12,10 @@ var Marvin = (function(my, global) {
 
 	var scene = new THREE.Scene();
 	scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1,10 );
+	my.scene = scene;
 
 	var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+	my.camera = camera;
 
 	var renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -69,6 +72,7 @@ var Marvin = (function(my, global) {
 		scene.add(c);
 		c.position.z = scale*y;
 		c.position.x = scale*x;
+		objects.push(c);
 	}
 
 	/**
@@ -135,6 +139,10 @@ var Marvin = (function(my, global) {
 		camera_position_callback = callback;
 		camera_target_position = camera.position[camera_axis] + 2*camera_direction;
 		console.log(camera.position[camera_axis], camera_target_position);
+	}
+
+	my.getObjects = function() {
+		return objects;
 	}
 
 	return my;

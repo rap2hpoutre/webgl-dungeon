@@ -22,7 +22,15 @@
 	});
 
 	document.addEventListener( 'mousedown', function(event) {
-		console.log("Click.");
+		var camera = Marvin.camera;
+		console.log(camera.position, camera.rotation);
+		var raycaster = new THREE.Raycaster( camera.position, camera.rotation );
+		console.log(raycaster);
+		var intersects = raycaster.intersectObjects(  Marvin.getObjects());
+		console.log(intersects);
+		if ( intersects.length > 0 ) {
+			console.log(intersects);
+		}
 	}, false );
 
 }(Marvin, Hyacinthe, Isis, this));
