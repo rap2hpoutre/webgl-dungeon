@@ -12,10 +12,8 @@ var Marvin = (function(my, global) {
 
 	var scene = new THREE.Scene();
 	scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1,10 );
-	my.scene = scene;
 
 	var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-	my.camera = camera;
 
 	var renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -70,9 +68,9 @@ var Marvin = (function(my, global) {
 	my.drawCube = function(x, y) {
 		var c = new THREE.Mesh(cube_geometry, cube_material);
 		scene.add(c);
+		objects.push(c);
 		c.position.z = scale*y;
 		c.position.x = scale*x;
-		objects.push(c);
 	}
 
 	/**
@@ -83,6 +81,7 @@ var Marvin = (function(my, global) {
 		sprite.position.z = scale*y;
 		sprite.position.x = scale*x;
 		sprite.position.y = -0.5;
+		objects.push(sprite);
 		scene.add( sprite );
 	}
 
@@ -143,6 +142,17 @@ var Marvin = (function(my, global) {
 
 	my.getObjects = function() {
 		return objects;
+	}
+
+	my.getElement = function(x, y) {
+		var vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
+		var projector = new THREE.Projector();
+		projector.unprojectVector(vector, camera);
+
+		var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+		var intersects = raycaster.intersectObjects(objects);
+		console.log(intersects[0]);
 	}
 
 	return my;
