@@ -1,5 +1,9 @@
 var Hyacinthe = (function(my, Marvin, global) {
 
+	var backPack = {
+		items: [];
+	};
+
 	var move = function(direction) {
 		if (my.isMoving || !canGo(direction)) return;
 		my.isMoving = true;
@@ -64,6 +68,10 @@ var Hyacinthe = (function(my, Marvin, global) {
 	my.moveBack = function() {
 		move(-1);
 	};
+
+	my.take = function(element) {
+		Marvin.removeElement(element);
+	}
 
 	return my;
 }(Hyacinthe || {}, Marvin, this));

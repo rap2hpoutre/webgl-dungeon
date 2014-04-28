@@ -152,7 +152,12 @@ var Marvin = (function(my, global) {
 		var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
 		var intersects = raycaster.intersectObjects(objects);
-		console.log(intersects[0]);
+
+		console.log(raycaster.ray.origin.distanceTo( intersects[0].point ));
+	}
+
+	my.removeElement = function(element) {
+		scene.remove(element);
 	}
 
 	return my;
