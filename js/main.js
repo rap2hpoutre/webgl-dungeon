@@ -1,29 +1,31 @@
 (function(Marvin, Hyacinthe, Isis, global){
 
-	Isis.buildTestLevel(Marvin);
+  Isis.buildTestLevel(Marvin);
 
-	Hyacinthe.collisionMap = Isis.getCollisionMap();
-	Hyacinthe.playerPosition = Isis.getPlayerPosition();
+  Hyacinthe.collisionMap = Isis.getCollisionMap();
+  Hyacinthe.playerPosition = Isis.getPlayerPosition();
 
-	Marvin.startRender();
+  Marvin.startRender();
 
-	this.addEventListener("keypress", function(e){
-		e.preventDefault();
-		var code = e.keyCode || e.which;
-		if (code == 113) {
-			Hyacinthe.turnLeft();
-		} else if(code == 100) {
-			Hyacinthe.turnRight();
-		} else if (code == 122) {
-			Hyacinthe.moveForward();
-		} else if(code == 115) {
-			Hyacinthe.moveBack();
-		}
-	});
+  this.addEventListener("keypress", function(e){
+    e.preventDefault();
+    var code = e.keyCode || e.which;
+    if (code == 113) {
+      Hyacinthe.turnLeft();
+    } else if(code == 100) {
+      Hyacinthe.turnRight();
+    } else if (code == 122) {
+      Hyacinthe.moveForward();
+    } else if(code == 115) {
+      Hyacinthe.moveBack();
+    }
+  });
 
-	document.addEventListener( 'mousedown', function(event) {
-		var element = Marvin.getElement(event.clientX, event.clientY);
-		if (Isis.isItem(element)) Hyacinthe.take(element);
-	}, false );
+  document.addEventListener( 'mousedown', function(event) {
+    var element = Marvin.getElement(event.clientX, event.clientY);
+    if (true || Isis.isItem(element)) {
+      Hyacinthe.take(element);
+    }
+  }, false );
 
 }(Marvin, Hyacinthe, Isis, this));
