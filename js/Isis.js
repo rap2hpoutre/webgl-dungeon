@@ -9,12 +9,12 @@ var Isis = (function(my, global) {
     '1 . . . . . . . . . 1 . . . . . . . . 1',
     '1 . . . . . . . . . 1 . . . . . . . . 1',
     '1 . . . . . . . . . 1 . . . . . . . . 1',
-    '1 . . . . . . . . . 1 . . . . . . . . 1',
+    '1 . . . . . . . x . 1 . . . . . . . . 1',
     '1 1 1 1 1 . . 1 1 1 1 . . . . . . . . 1',
     '1 a . . . . . . 1 1 1 1 1 1 . . 1 1 1 1',
     '1 . . . . . . . 1 . . . . . . . . . . 1',
     '1 . . . . @ . . 1 . . . . . . . . . . 1',
-    '1 . . . . . . . 1 . . . . . . . . . . 1',
+    '1 . . . . a . . 1 . . . . . . . . . . 1',
     '1 1 1 1 1 1 1 1 1 1 1 1 1 . . 1 1 1 1 1',
   ];
 
@@ -29,22 +29,27 @@ var Isis = (function(my, global) {
     if (cell == 1) return true;
   }
 
-  my.isItem = function(cell) {
-    if (cell == 1) return true;
-  }
-
   my.buildTestLevel = function(Marvin) {
     for(var i = 0; i < zone.length; i++) {
       for(var j = 0; j < zone[i].length; j++) {
+
+        // Wall
         if (zone[i][j] == 1) {
           Marvin.drawCube(i,j);
+
+        // Player
         } else if (zone[i][j] == '@') {
           Marvin.setCameraPosition(i,j);
-        } else if (zone[i][j] == 'a') {
-          Marvin.drawSprite(i,j);
+
+        // Test Object
+        } else if (/[a-z]/.test(zone[i][j])) {
+          sprite = Marvin.drawSprite(i, j, zone[i][j]);
+          sprite.isItem = true;
         }
       }
     }
+
+    // Floor and Ceil
     Marvin.drawFloor(zone.length, zone[0].length);
   }
 
@@ -66,7 +71,7 @@ var Isis = (function(my, global) {
   my.getPlayerPosition = function() {
     for(var i = 0; i < zone.length; i++) {
       for(var j = 0; j < zone[i].length; j++) {
-        if (zone[i][j] == 2) return {x: j, y: i};
+        if (zone[i][j] == '@') return {x: j, y: i};
       }
     }
   }

@@ -1,9 +1,5 @@
 var Hyacinthe = (function(my, Marvin, global) {
 
-  var backPack = {
-    items: []
-  };
-
   var move = function(direction) {
     if (my.isMoving || !canGo(direction)) return;
     my.isMoving = true;
@@ -19,7 +15,7 @@ var Hyacinthe = (function(my, Marvin, global) {
         };
       }(my))
     );
-  }
+  };
 
   var turn = function (direction) {
     if (my.isMoving) return;
@@ -31,16 +27,17 @@ var Hyacinthe = (function(my, Marvin, global) {
         console.log(_this.compass[0]);
       };
     }(my, direction)) );
-  }
+  };
 
   var canGo = function (direction) {
     var c = my.compass[0];
+    console.log(my);
     var ret = ((c == "N" && my.collisionMap[my.playerPosition.y-direction][my.playerPosition.x] == 0 ||
       c == "S" && my.collisionMap[my.playerPosition.y+direction][my.playerPosition.x] == 0 ||
       c == "W" && my.collisionMap[my.playerPosition.y][my.playerPosition.x+direction] == 0 ||
       c == "E" && my.collisionMap[my.playerPosition.y][my.playerPosition.x-direction] == 0));
     return ret;
-  }
+  };
 
   my.compass = ["E", "S", "W", "N"];
 
@@ -51,6 +48,10 @@ var Hyacinthe = (function(my, Marvin, global) {
   my.playerPosition = {
     x: 0,
     y: 0
+  };
+
+  my.backPack = {
+    items: []
   };
 
   my.turnLeft = function() {
@@ -69,8 +70,25 @@ var Hyacinthe = (function(my, Marvin, global) {
     move(-1);
   };
 
-  my.take = function(element) {
-    Marvin.removeElement(element);
+  my.updateInventory = function () {
+    for (i = 0; i < my.backPack.items.length; i++) {
+      Marvin.displayObjectOrtho(i, my.backPack.items[i]);
+    }  
+  }
+
+  my.take = function (item) {
+    Marvin.removeObject(item);
+    my.backPack.items.push(item);
+    my.updateInventory();
+  }
+
+  my.tryInteraction = function() {
+    var element = Marvin.getElement(event.clientX, event.clientY);
+
+    // Object ramassable
+    if (element.realDistance < 2.5 && element.object.isItem) {
+      my.take(element.object);
+    }
   }
 
   return my;

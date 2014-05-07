@@ -3,12 +3,17 @@
  */
 var Marvin = (function(my, global) {
   var objects = [],
+    sprite_material = {},
     camera_target_rotation_y = null,
     camera_target_position = null,
     camera_direction,
     camera_axis,
     camera_rotation_callback,
     camera_position_callback;
+
+  var sceneOrtho = new THREE.Scene();
+  var cameraOrtho = new THREE.OrthographicCamera( - window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, - window.innerHeight / 2, 1, 10 );
+  cameraOrtho.position.z = 10;
 
   var scene = new THREE.Scene();
   scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1,10 );
@@ -17,19 +22,15 @@ var Marvin = (function(my, global) {
 
   var renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.autoClear = false;
   document.body.appendChild(renderer.domElement);
 
   var map = THREE.ImageUtils.loadTexture( "images/1.png" );
   map.magFilter = THREE.NearestFilter;
 
-  var sprite_texture = THREE.ImageUtils.loadTexture( "images/gold.png" );
-  sprite_texture.magFilter = THREE.NearestFilter;
-
-  var sprite_material = new THREE.SpriteMaterial( { map: sprite_texture, color: 0xffffff, fog: true } );
-
   var scale = 2;
   var cube_geometry = new THREE.CubeGeometry(scale,scale,scale);
-  var cube_material = new THREE.MeshBasicMaterial( { map: map } );// new THREE.MeshBasicMaterial({map: map});
+  var cube_material = new THREE.MeshBasicMaterial( { map: map } );
 
   var renderCameraRotation = function() {
     if (camera_target_rotation_y !== null) {
@@ -59,7 +60,10 @@ var Marvin = (function(my, global) {
     renderCameraRotation();
     renderCameraPosition();
 
+    renderer.clear();
     renderer.render(scene, camera);
+    renderer.clearDepth();
+    renderer.render(sceneOrtho, cameraOrtho );
   };
 
   /**
@@ -71,18 +75,38 @@ var Marvin = (function(my, global) {
     objects.push(c);
     c.position.z = scale*y;
     c.position.x = scale*x;
+
+    var __g = new THREE.CubeGeometry( 0.1, 6*2/32, 14*2/32 );
+    var __m = new THREE.MeshBasicMaterial( { color: 0xaaaaaa } );
+    var __b = new THREE.Mesh( __g, __m );
+    __b.position.z = scale*y + 9*2/32 -0.5;
+    __b.position.x = scale*x+1;
+    scene.add( __b );
+
+    return c;
   }
 
   /**
    * drawCube()
    */
-  my.drawSprite = function(x, y) {
-    var sprite = new THREE.Sprite( sprite_material );
+  my.drawSprite = function(x, y, n) {
+
+    // Initialisation du materiel si non existant
+    if (!sprite_material[n]) {
+      var sprite_texture = THREE.ImageUtils.loadTexture( "images/" + n + ".png" );
+      sprite_texture.magFilter = THREE.NearestFilter;
+      sprite_material[n] = new THREE.SpriteMaterial( { map: sprite_texture, color: 0xffffff, fog: true } );
+    }
+  
+    var sprite = new THREE.Sprite( sprite_material[n] );
+    sprite.scale.set( 0.5, 0.5, 1 );
     sprite.position.z = scale*y;
     sprite.position.x = scale*x;
-    sprite.position.y = -0.5;
+    sprite.position.y = -1 + (0.5/2);
+
     objects.push(sprite);
     scene.add( sprite );
+    return sprite;
   }
 
   /**
@@ -145,20 +169,32 @@ var Marvin = (function(my, global) {
   }
 
   my.getElement = function(x, y) {
+    
     var vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
     var projector = new THREE.Projector();
+
     projector.unprojectVector(vector, camera);
 
     var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
     var intersects = raycaster.intersectObjects(objects);
 
-    console.log(raycaster.ray.origin.distanceTo( intersects[0].point ));
-    return intersects[0];
+    if (intersects[0]) {
+      console.log(raycaster.ray.origin.distanceTo( intersects[0].point ));
+      intersects[0].realDistance = raycaster.ray.origin.distanceTo( intersects[0].point );
+      return intersects[0];
+    }
   }
 
-  my.removeElement = function(element) {
-    scene.remove(element.object);
+  my.removeObject = function(o) {
+    scene.remove(o);
+  }
+
+  my.displayObjectOrtho = function(i, o) {
+    console.log(o);
+    o.scale.set( window.innerWidth/32, window.innerWidth/32, 1 );
+    o.position.set(-window.innerWidth/2+32 +(i*32),window.innerHeight/2-32,1)
+    sceneOrtho.add(o);
   }
 
   return my;

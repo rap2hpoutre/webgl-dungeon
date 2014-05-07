@@ -22,10 +22,7 @@
   });
 
   document.addEventListener( 'mousedown', function(event) {
-    var element = Marvin.getElement(event.clientX, event.clientY);
-    if (true || Isis.isItem(element)) {
-      Hyacinthe.take(element);
-    }
+    Hyacinthe.tryInteraction();
   }, false );
 
 }(Marvin, Hyacinthe, Isis, this));
