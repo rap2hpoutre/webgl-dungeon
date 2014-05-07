@@ -73,7 +73,7 @@ var Hyacinthe = (function(my, Marvin, global) {
   my.updateInventory = function () {
     for (i = 0; i < my.backPack.items.length; i++) {
       Marvin.displayObjectOrtho(i, my.backPack.items[i]);
-    }  
+    }
   }
 
   my.take = function (item) {
@@ -83,11 +83,25 @@ var Hyacinthe = (function(my, Marvin, global) {
   }
 
   my.tryInteraction = function() {
+
     var element = Marvin.getElement(event.clientX, event.clientY);
+    console.log(element);
 
     // Object ramassable
     if (element.realDistance < 2.5 && element.object.isItem) {
       my.take(element.object);
+
+    // Trigger
+    } else if (element.realDistance < 2.5 && element.object.isTrigger) {
+
+      // Destruction d'un mur
+      if (element.object.gameProperties.action=='destroy') {
+        my.collisionMap[element.object.gameProperties.target.gameProperties.x][element.object.gameProperties.target.gameProperties.y] = 0;
+        Marvin.moveWall(element.object.gameProperties.target);
+        //Marvin.removeObject(element.object.gameProperties.target);
+        Marvin.removeObject(element.object);
+
+      }
     }
   }
 

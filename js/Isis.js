@@ -7,15 +7,15 @@ var Isis = (function(my, global) {
     '1 1 . . 1 1 1 1 . . 1 1 1 1 1 1 . . 1 1',
     '1 . . . . . . . . . 1 . . . . . . . . 1',
     '1 . . . . . . . . . 1 . . . . . . . . 1',
-    '1 . . . . . . . . . 1 . . . . . . . . 1',
-    '1 . . . . . . . . . 1 . . . . . . . . 1',
-    '1 . . . . . . . x . 1 . . . . . . . . 1',
-    '1 1 1 1 1 . . 1 1 1 1 . . . . . . . . 1',
-    '1 a . . . . . . 1 1 1 1 1 1 . . 1 1 1 1',
-    '1 . . . . . . . 1 . . . . . . . . . . 1',
-    '1 . . . . @ . . 1 . . . . . . . . . . 1',
-    '1 . . . . a . . 1 . . . . . . . . . . 1',
-    '1 1 1 1 1 1 1 1 1 1 1 1 1 . . 1 1 1 1 1',
+    '1 1 5 1 . . . . . . 1 . . . . . . . . 1',
+    '3 . . 6 . . . . . . 1 . . . . . . . . 1',
+    '1 b 1 1 . . . . x . 1 . . . . . . . . 1',
+    '1 . 1 . . . . 1 1 1 1 . . . . . . . . 1',
+    '1 2 1 1 . . . . 1 1 1 1 1 1 . . 1 1 1 1',
+    '1 . . 3 . 1 1 . 1 . . . . . . . . . . 1',
+    '5 @ . 4 . 1 1 . 1 . . . . . . . . . . 1',
+    '3 b . 1 2 1 . . 1 . . . . . . . . . . 1',
+    '1 1 3 1 1 1 1 1 1 1 1 1 1 . . 1 1 1 1 1',
   ];
 
   // Uh... Don't know why i see things in mirror
@@ -26,7 +26,7 @@ var Isis = (function(my, global) {
   }
 
   my.isWall = function(cell) {
-    if (cell == 1) return true;
+    if (!isNaN(cell)) return true;
   }
 
   my.buildTestLevel = function(Marvin) {
@@ -34,8 +34,16 @@ var Isis = (function(my, global) {
       for(var j = 0; j < zone[i].length; j++) {
 
         // Wall
-        if (zone[i][j] == 1) {
-          Marvin.drawCube(i,j);
+        if (!isNaN(zone[i][j])) {
+
+          // ... with secret trigger ?
+          if (zone[i][j] == 2 || zone[i][j] == 6) {
+            trigger = Marvin.addClickTrigger(i, j, 'T_SECRET_WALL_BUTTON_' + (zone[i][j] == 6 ? 'N' : 'E') , Marvin.drawCube(i,j, 2));
+
+          // Or simple
+          } else {
+            Marvin.drawCube(i,j, zone[i][j], zone[i][j] == 4);
+          }
 
         // Player
         } else if (zone[i][j] == '@') {

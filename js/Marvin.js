@@ -1,9 +1,11 @@
 /**
  * Marvin - TODO: clean
  */
-var Marvin = (function(my, global) {
+var Marvin = (function(my, Horus, global) {
   var objects = [],
     sprite_material = {},
+    wall_material = {},
+    moving_walls = [],
     camera_target_rotation_y = null,
     camera_target_position = null,
     camera_direction,
@@ -11,12 +13,8 @@ var Marvin = (function(my, global) {
     camera_rotation_callback,
     camera_position_callback;
 
-  var sceneOrtho = new THREE.Scene();
-  var cameraOrtho = new THREE.OrthographicCamera( - window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, - window.innerHeight / 2, 1, 10 );
-  cameraOrtho.position.z = 10;
-
   var scene = new THREE.Scene();
-  scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1,10 );
+  scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1, 10 );
 
   var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
@@ -25,12 +23,8 @@ var Marvin = (function(my, global) {
   renderer.autoClear = false;
   document.body.appendChild(renderer.domElement);
 
-  var map = THREE.ImageUtils.loadTexture( "images/1.png" );
-  map.magFilter = THREE.NearestFilter;
-
   var scale = 2;
   var cube_geometry = new THREE.CubeGeometry(scale,scale,scale);
-  var cube_material = new THREE.MeshBasicMaterial( { map: map } );
 
   var renderCameraRotation = function() {
     if (camera_target_rotation_y !== null) {
@@ -60,30 +54,60 @@ var Marvin = (function(my, global) {
     renderCameraRotation();
     renderCameraPosition();
 
+    for (var i in moving_walls) {
+      moving_walls[i].translateY(0.05);
+      if (moving_walls[i].position.y > 1.8) {
+        moving_walls[i].material = wall_material[1];
+        moving_walls.splice(i, 1);
+      }
+    }
+
     renderer.clear();
     renderer.render(scene, camera);
     renderer.clearDepth();
-    renderer.render(sceneOrtho, cameraOrtho );
+    renderer.render(Horus.scene, Horus.camera );
   };
 
   /**
    * drawCube()
    */
-  my.drawCube = function(x, y) {
-    var c = new THREE.Mesh(cube_geometry, cube_material);
-    scene.add(c);
-    objects.push(c);
+  my.drawCube = function(x, y, n, transparent) {
+
+    // Initialisation du materiel si non existant
+    if (!wall_material[n]) {
+      var map_wall = THREE.ImageUtils.loadTexture( "images/" + n + ".png" );
+      map_wall.magFilter = THREE.NearestFilter;
+      wall_material[n] = new THREE.MeshBasicMaterial( { map: map_wall, transparent: transparent } );
+    }
+
+    var c = new THREE.Mesh(cube_geometry, wall_material[n]);
+
+    c.gameProperties = { id: objects.length, x: x, y: y};
     c.position.z = scale*y;
     c.position.x = scale*x;
 
-    var __g = new THREE.CubeGeometry( 0.1, 6*2/32, 14*2/32 );
-    var __m = new THREE.MeshBasicMaterial( { color: 0xaaaaaa } );
-    var __b = new THREE.Mesh( __g, __m );
-    __b.position.z = scale*y + 9*2/32 -0.5;
-    __b.position.x = scale*x+1;
-    scene.add( __b );
-
+    objects.push(c);
+    scene.add(c);
     return c;
+  }
+
+  my.addClickTrigger = function(x, y, type, target) {
+    if (/T_SECRET_WALL_BUTTON_./.test(type)) { // bouton secret accessible quand on regarde à l'est
+
+      if (type=='T_SECRET_WALL_BUTTON_E') {
+        var t = new THREE.Mesh( new THREE.CubeGeometry( 0.05, 1/8, 1/8 ), new THREE.MeshBasicMaterial( { visible: false } ));
+        t.position = new THREE.Vector3(scale*x+1, -2*(1/32), scale*y + 6*(1/32));
+      } else if (type=='T_SECRET_WALL_BUTTON_N') {
+        var t = new THREE.Mesh( new THREE.CubeGeometry(1/8 , 1/8, 0.05 ), new THREE.MeshBasicMaterial( { visible: false } ));
+        t.position = new THREE.Vector3(scale*x - 6*(1/32), -2*(1/32), scale*y +1);
+      }
+      t.isTrigger = true;
+      t.gameProperties = { id: objects.length, action: 'destroy', target: target };
+
+      scene.add(t);
+      objects.push(t);
+      return t;
+    }
   }
 
   /**
@@ -97,8 +121,10 @@ var Marvin = (function(my, global) {
       sprite_texture.magFilter = THREE.NearestFilter;
       sprite_material[n] = new THREE.SpriteMaterial( { map: sprite_texture, color: 0xffffff, fog: true } );
     }
-  
+
     var sprite = new THREE.Sprite( sprite_material[n] );
+
+    sprite.gameProperties = { id: objects.length };
     sprite.scale.set( 0.5, 0.5, 1 );
     sprite.position.z = scale*y;
     sprite.position.x = scale*x;
@@ -114,7 +140,7 @@ var Marvin = (function(my, global) {
    */
   my.drawFloor = function(wx, wy) {
     var geometry_plane = new THREE.PlaneGeometry( wx*scale, wy*scale );
-    var material_plane = new THREE.MeshBasicMaterial( {color: 0x444444 } );
+    var material_plane = new THREE.MeshBasicMaterial( {color: 0x555555 } );
     var floor = new THREE.Mesh( geometry_plane, material_plane );
     floor.rotation.x = Math.PI + Math.PI/2;
     floor.position.y = -1;
@@ -169,7 +195,7 @@ var Marvin = (function(my, global) {
   }
 
   my.getElement = function(x, y) {
-    
+
     var vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
     var projector = new THREE.Projector();
 
@@ -180,22 +206,28 @@ var Marvin = (function(my, global) {
     var intersects = raycaster.intersectObjects(objects);
 
     if (intersects[0]) {
-      console.log(raycaster.ray.origin.distanceTo( intersects[0].point ));
       intersects[0].realDistance = raycaster.ray.origin.distanceTo( intersects[0].point );
       return intersects[0];
     }
   }
 
   my.removeObject = function(o) {
+    objects[o.gameProperties.id] = null;
     scene.remove(o);
   }
 
+  my.moveWall = function(o) {
+    moving_walls.push(o);
+  }
+
+  /**
+   * todo: give it to Horus
+   */
   my.displayObjectOrtho = function(i, o) {
-    console.log(o);
     o.scale.set( window.innerWidth/32, window.innerWidth/32, 1 );
     o.position.set(-window.innerWidth/2+32 +(i*32),window.innerHeight/2-32,1)
-    sceneOrtho.add(o);
+    Horus.scene.add(o);
   }
 
   return my;
-}(Marvin || {}, this));
+}(Marvin || {}, Horus, this));
