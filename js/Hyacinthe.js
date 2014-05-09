@@ -1,4 +1,4 @@
-var Hyacinthe = (function(my, Marvin, global) {
+var Hyacinthe = (function(my, Marvin, Horus, global) {
 
   var move = function(direction) {
     if (my.isMoving || !canGo(direction)) return;
@@ -70,40 +70,53 @@ var Hyacinthe = (function(my, Marvin, global) {
     move(-1);
   };
 
-  my.updateInventory = function () {
-    for (i = 0; i < my.backPack.items.length; i++) {
-      Marvin.displayObjectOrtho(i, my.backPack.items[i]);
-    }
-  }
-
   my.take = function (item) {
     Marvin.removeObject(item);
     my.backPack.items.push(item);
-    my.updateInventory();
+    Horus.objects = my.backPack.items;
+    Horus.updateInventory();
   }
 
   my.tryInteraction = function() {
 
+    var HUDElement = Horus.getElement(event.clientX, event.clientY);
+    if (HUDElement) {
+      Marvin.mouseLinkObject(HUDElement.object);
+    }
+
     var element = Marvin.getElement(event.clientX, event.clientY);
-    console.log(element);
 
-    // Object ramassable
-    if (element.realDistance < 2.5 && element.object.isItem) {
-      my.take(element.object);
+    if (element.realDistance) {
 
-    // Trigger
-    } else if (element.realDistance < 2.5 && element.object.isTrigger) {
+       // On pose un objet sur le sol
+       if (element.object.isFloor) {
+          var linked = Marvin.getMouseLinkObject();
+          if (linked && element.realDistance < 4.5) {
+            Horus.debugThrowAll();
+            my.backPack.items = [];
+            Marvin.mouseLinkObject(null);
+            Marvin.addObject(linked, element.point.x, 0, element.point.z);
+          }
 
-      // Destruction d'un mur
-      if (element.object.gameProperties.action=='destroy') {
-        my.collisionMap[element.object.gameProperties.target.gameProperties.x][element.object.gameProperties.target.gameProperties.y] = 0;
-        Marvin.moveWall(element.object.gameProperties.target);
-        //Marvin.removeObject(element.object.gameProperties.target);
-        Marvin.removeObject(element.object);
+      // Object ramassable
+      } else if (element.realDistance < 2.5 && element.object.isItem) {
+        my.take(element.object);
 
+      // Trigger
+      } else if (element.realDistance < 2.5 && element.object.isTrigger) {
+
+        // Destruction d'un mur
+        if (element.object.gameProperties.action=='destroy') {
+          my.collisionMap[element.object.gameProperties.target.gameProperties.x][element.object.gameProperties.target.gameProperties.y] = 0;
+          Marvin.moveWall(element.object.gameProperties.target);
+          //Marvin.removeObject(element.object.gameProperties.target);
+          Marvin.removeObject(element.object);
+
+        }
       }
     }
+
   }
 
   return my;
-}(Hyacinthe || {}, Marvin, this));
+}(Hyacinthe || {}, Marvin, Horus, this));

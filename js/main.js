@@ -25,4 +25,8 @@
     Hyacinthe.tryInteraction();
   }, false );
 
+  document.addEventListener( 'mousemove', function(event) {
+    Marvin.setMousePos(event.clientX,event.clientY);
+  }, false );
+
 }(Marvin, Hyacinthe, Isis, this));

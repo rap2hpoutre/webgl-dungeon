@@ -11,17 +11,28 @@ var Marvin = (function(my, Horus, global) {
     camera_direction,
     camera_axis,
     camera_rotation_callback,
-    camera_position_callback;
+    camera_position_callback,
+    mouseLinkedObject,
+    mousePos;
 
   var scene = new THREE.Scene();
   scene.fog = new THREE.Fog( new THREE.Color( 0 ), 1, 10 );
 
   var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 
+  var projector = new THREE.Projector();
+
   var renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.autoClear = false;
   document.body.appendChild(renderer.domElement);
+
+  // Stats
+  var stats = new Stats();
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.right = '0px';
+  stats.domElement.style.top = '0px';
+  document.body.appendChild( stats.domElement );
 
   var scale = 2;
   var cube_geometry = new THREE.CubeGeometry(scale,scale,scale);
@@ -62,11 +73,29 @@ var Marvin = (function(my, Horus, global) {
       }
     }
 
+    if (mouseLinkedObject) {
+      mouseLinkedObject.position.set(-(window.innerWidth / 2) + mousePos.x, (window.innerHeight / 2) - mousePos.y, 1);
+    }
+
     renderer.clear();
     renderer.render(scene, camera);
     renderer.clearDepth();
     renderer.render(Horus.scene, Horus.camera );
+
+    stats.update();
   };
+
+  my.setMousePos =  function(x, y) {
+    mousePos = {x:x, y:y};
+  }
+
+  my.mouseLinkObject = function(o) {
+    mouseLinkedObject = o;
+  }
+
+  my.getMouseLinkObject = function() {
+    return mouseLinkedObject;
+  }
 
   /**
    * drawCube()
@@ -91,6 +120,9 @@ var Marvin = (function(my, Horus, global) {
     return c;
   }
 
+  /**
+   * addClickTrigger()
+   */
   my.addClickTrigger = function(x, y, type, target) {
     if (/T_SECRET_WALL_BUTTON_./.test(type)) { // bouton secret accessible quand on regarde à l'est
 
@@ -126,9 +158,7 @@ var Marvin = (function(my, Horus, global) {
 
     sprite.gameProperties = { id: objects.length };
     sprite.scale.set( 0.5, 0.5, 1 );
-    sprite.position.z = scale*y;
-    sprite.position.x = scale*x;
-    sprite.position.y = -1 + (0.5/2);
+    sprite.position = new THREE.Vector3(scale*x, -1 + (0.5/2), scale*y);
 
     objects.push(sprite);
     scene.add( sprite );
@@ -141,21 +171,21 @@ var Marvin = (function(my, Horus, global) {
   my.drawFloor = function(wx, wy) {
     var geometry_plane = new THREE.PlaneGeometry( wx*scale, wy*scale );
     var material_plane = new THREE.MeshBasicMaterial( {color: 0x555555 } );
+
     var floor = new THREE.Mesh( geometry_plane, material_plane );
     floor.rotation.x = Math.PI + Math.PI/2;
-    floor.position.y = -1;
-    floor.position.z = scale*(wy/2);
-    floor.position.x = scale*(wx/2);
+    floor.position = new THREE.Vector3(scale*(wx/2), -1, scale*(wy/2));
+    floor.isFloor = true;
 
     var ceil = new THREE.Mesh( geometry_plane, material_plane );
     ceil.rotation.x = Math.PI/2;
-    ceil.position.y = 1;
-    ceil.position.z = scale*(wy/2);
-    ceil.position.x = scale*(wx/2);
+    ceil.position = new THREE.Vector3(scale*(wx/2), 1, scale*(wy/2));
 
+    objects.push(floor);
     scene.add( floor );
     scene.add( ceil );
   }
+
   /**
    * setCameraPosition()
    */
@@ -164,12 +194,14 @@ var Marvin = (function(my, Horus, global) {
     camera.position.y = 0;
     camera.position.x = scale*x;
   }
+
   /**
    * startRender()
    */
   my.startRender = function () {
     render();
   }
+
   /**
    * startCameraRotation()
    */
@@ -179,6 +211,7 @@ var Marvin = (function(my, Horus, global) {
     camera_target_rotation_y = camera.rotation.y + (Math.PI / 2)*camera_direction;
     console.log(camera.rotation.y, camera_target_rotation_y);
   }
+
   /**
    * startCameraMovement()
    */
@@ -190,14 +223,18 @@ var Marvin = (function(my, Horus, global) {
     console.log(camera.position[camera_axis], camera_target_position);
   }
 
+  /**
+   * Objects list
+   */
   my.getObjects = function() {
     return objects;
   }
 
+  /**
+   *
+   */
   my.getElement = function(x, y) {
-
     var vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
-    var projector = new THREE.Projector();
 
     projector.unprojectVector(vector, camera);
 
@@ -206,6 +243,7 @@ var Marvin = (function(my, Horus, global) {
     var intersects = raycaster.intersectObjects(objects);
 
     if (intersects[0]) {
+      console.log('BURP' + intersects[0])
       intersects[0].realDistance = raycaster.ray.origin.distanceTo( intersects[0].point );
       return intersects[0];
     }
@@ -216,17 +254,20 @@ var Marvin = (function(my, Horus, global) {
     scene.remove(o);
   }
 
-  my.moveWall = function(o) {
-    moving_walls.push(o);
+  my.addObject = function(o, x, y, z) {
+    /*
+    objects[o.gameProperties.id] = o;
+    scene.add(o);
+    o.position.set(x, y, z);
+    objects[o.gameProperties.id].position = new THREE.Vector3(x, y, z);
+    o.scale.set( 0.5, 0.5, 1 );
+    */
+    var sprite = my.drawSprite(Math.round(x/2), Math.round(z/2), 'b');
+    sprite.isItem = true;
   }
 
-  /**
-   * todo: give it to Horus
-   */
-  my.displayObjectOrtho = function(i, o) {
-    o.scale.set( window.innerWidth/32, window.innerWidth/32, 1 );
-    o.position.set(-window.innerWidth/2+32 +(i*32),window.innerHeight/2-32,1)
-    Horus.scene.add(o);
+  my.moveWall = function(o) {
+    moving_walls.push(o);
   }
 
   return my;
